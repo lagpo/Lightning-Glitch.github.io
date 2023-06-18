@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="pbl.css" />
+    <title>Carbon Emissions Calculator</title>
+    <script>
+        function calculateVehicleEmissions() {
+            var distance = parseFloat(document.getElementById("vehicle_distance").value);
+            var fuel_efficiency = parseFloat(document.getElementById("fuel_efficiency").value);
+            var fuel_type = document.getElementById("fuel_type").value.toLowerCase();
+
+            var emission_factors = {
+                "petrol": 2.31,
+                "diesel": 2.68
+            };
+
+            var emission_factor = emission_factors[fuel_type];
+
+            if (emission_factor) {
+                var emissions1 = distance * (1 / fuel_efficiency) * emission_factor;
+                document.getElementById("vehicle_result").innerHTML = "Your total carbon emissions for the trip are: " + emissions1.toFixed(2) + " kg CO2";
+            } else {
+                document.getElementById("vehicle_result").innerHTML = "Invalid fuel type. Please enter either 'petrol' or 'diesel'.";
+            }
+        }
+
+        function calculateFoodEmissions() {
+            var food_consumed = parseFloat(document.getElementById("food_consumed").value);
+            var foodTypes = document.getElementsByName("food_type[]");
+            var emission_factors = {
+                1: 6.9,
+                2: 4.8,
+                3: 2.7,
+                4: 2.5,
+                5: 1.9,
+                6: 1.1
+            };
+            var emissions2 = 0;
+
+            for (var i = 0; i < foodTypes.length; i++) {
+                if (foodTypes[i].checked) {
+                    var foodType = parseInt(foodTypes[i].value);
+                    var emissionFactor = emission_factors[foodType];
+
+                    if (emissionFactor) {
+                        emissions2 += food_consumed * emissionFactor;
+                    } else {
+                        document.getElementById("food_result").innerHTML = "Invalid food type. Please select a valid food type.";
+                        return;
+                    }
+                }
+            }
+
+            document.getElementById("food_result").innerHTML = "Your total carbon emissions for the food are: " + emissions2.toFixed(2) + " kg CO2";
+        }
+
+        function calculateElectricityEmissions() {
+            var units = parseFloat(document.getElementById("electricity_units").value);
+            var emissions_factor = 0.93;
+            var emissions3 = units * emissions_factor;
+            document.getElementById("electricity_result").innerHTML = "Your total carbon emissions for the electricity consumed are: " + emissions3.toFixed(2) + " kg CO2";
+        }
+
+        function calculateTotalEmissions() {
+            var vehicleEmissions = parseFloat(document.getElementById("vehicle_result").innerText.split(": ")[1]);
+            var foodEmissions = parseFloat(document.getElementById("food_result").innerText.split(": ")[1]);
+            var electricityEmissions = parseFloat(document.getElementById("electricity_result").innerText.split(": ")[1]);
+
+            var total = (vehicleEmissions + foodEmissions + electricityEmissions)*30;
+
+            document.getElementById("total_result").innerHTML = "Total carbon emissions are: " + total.toFixed(2) + " kg CO2";
+
+            var messageElement = document.getElementById("message");
+
+            if (total < 49900) {
+                messageElement.innerHTML = "You are in the non-harmful range.";
+            } else if (total >= 49900 && total < 349300) {
+                messageElement.innerHTML = "You are in the harmful range. Please reduce CO2 usage.";
+            } else {
+                messageElement.innerHTML = "Your CO2 consumption is very high!! This could even lead to death!! Please reduce the usage.";
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Carbon Emissions Calculator</h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>Vehicle Emission Calculator</h2>
+            <label for="vehicle_distance">Enter the distance traveled (in kilometers):</label>
+            <input type="number" id="vehicle_distance" required>
+            <br><br>
+            <label for="fuel_efficiency">Enter the fuel efficiency of your vehicle / average of your vehicle (total kilometers per litre):</label>
+            <input type="number" id="fuel_efficiency" required>
+            <br><br>
+            <label for="fuel_type">Enter the fuel type (petrol/diesel):</label>
+            <input type="text" id="fuel_type" required>
+            <br><br>
+            <button onclick="calculateVehicleEmissions()">Calculate Emissions</button>
+            <p id="vehicle_result"></p>
+        </section>
+
+        <section>
+            <h2>Food Emission Calculator</h2>
+            <label for="food_type">What kind of food do you eat?</label>
+            <br>
+            <input type="checkbox" id="food_chicken" name="food_type[]" value="1">
+            <label for="food_chicken">Chicken</label>
+            <br>
+            <input type="checkbox" id="food_eggs" name="food_type[]" value="2">
+            <label for="food_eggs">Eggs</label>
+            <br>
+            <input type="checkbox" id="food_rice" name="food_type[]" value="3">
+            <label for="food_rice">Rice</label>
+            <br>
+            <input type="checkbox" id="food_vegetables" name="food_type[]" value="4">
+            <label for="food_vegetables">Vegetables</label>
+            <br>
+            <input type="checkbox" id="food_milk" name="food_type[]" value="5">
+            <label for="food_milk">Milk</label>
+            <br>
+            <input type="checkbox" id="food_fruits" name="food_type[]" value="6">
+            <label for="food_fruits">Fruits</label>
+            <br><br>
+            <label for="food_consumed">Enter the amount of food consumed by you (in kilos):</label>
+            <input type="number" id="food_consumed" required>
+            <br><br>
+            <button onclick="calculateFoodEmissions()">Calculate Emissions</button>
+            <p id="food_result"></p>
+        </section>
+
+        <section>
+            <h2>Electricity Emission Calculator</h2>
+            <label for="electricity_units">Enter total number of electricity units used (1 unit = 1 kWh):</label>
+            <input type="number" id="electricity_units" required>
+            <br><br>
+            <button onclick="calculateElectricityEmissions()">Calculate Emissions</button>
+            <p id="electricity_result"></p>
+        </section>
+
+        <section>
+            <h2>Total Emissions Calculator</h2>
+            <button onclick="calculateTotalEmissions()">Calculate Total Emissions</button>
+            <p id="total_result"></p>
+            <p id="message"></p>
+            <p><strong> PLEASE REDUCE YOUR CO2 EMISSIONS BY MAKING SURE YOU TAKE RIGHT DECISIONS. 
+            THIS WILL SAVE YOU AND OUR PLANET </strong></p> 
+        </section>
+    </main>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
