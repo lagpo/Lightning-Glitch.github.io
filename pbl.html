@@ -8,25 +8,37 @@
             var distance = parseFloat(document.getElementById("vehicle_distance").value);
             var fuel_efficiency = parseFloat(document.getElementById("fuel_efficiency").value);
             var fuel_type = document.getElementById("fuel_type").value.toLowerCase();
+            var has_puc = document.getElementById("has_puc").checked;
 
             var emission_factors = {
-                "petrol": 2.31,
-                "diesel": 2.68
+                "petrol": 2.41,
+                "diesel": 2.8
             };
+
+            if (has_puc) {
+                var petrol_puc = 2.31;
+                var diesel_puc = 2.68;
+                emission_factors = {
+                    "petrol": petrol_puc,
+                    "diesel": diesel_puc
+                };
+            }
 
             var emission_factor = emission_factors[fuel_type];
 
             if (emission_factor) {
-                var emissions1 = distance * (1 / fuel_efficiency) * emission_factor;
-                document.getElementById("vehicle_result").innerHTML = "Your total carbon emissions for the trip are: " + emissions1.toFixed(2) + " kg CO2";
+                var emissions = distance * (1 / fuel_efficiency) * emission_factor;
+                document.getElementById("vehicle_result").innerHTML = "Your total carbon emissions for the trip are: " + emissions.toFixed(2) + " kg CO2";
             } else {
                 document.getElementById("vehicle_result").innerHTML = "Invalid fuel type. Please enter either 'petrol' or 'diesel'.";
             }
         }
 
+
         function calculateFoodEmissions() {
             var food_consumed = parseFloat(document.getElementById("food_consumed").value);
             var foodTypes = document.getElementsByName("food_type[]");
+            var foodDays = document.getElementsByName("food_days[]"); // Get the selected food days inputs
             var emission_factors = {
                 1: 6.9,
                 2: 4.8,
@@ -35,7 +47,22 @@
                 5: 1.9,
                 6: 1.1
             };
-            var emissions2 = 0;
+            var totalFoodTypesSelected = 0;
+            var totalFoodDays = 0; // Variable to store the total number of days
+
+            for (var i = 0; i < foodTypes.length; i++) {
+                if (foodTypes[i].checked) {
+                    totalFoodTypesSelected++;
+                }
+            }
+
+            if (totalFoodTypesSelected === 0) {
+                document.getElementById("food_result").innerHTML = "No food type selected. Please select at least one food type.";
+                return;
+            }
+
+            var foodConsumedPerType = food_consumed / totalFoodTypesSelected;
+            var emissions = 0; // Variable to store the total emissions
 
             for (var i = 0; i < foodTypes.length; i++) {
                 if (foodTypes[i].checked) {
@@ -43,7 +70,17 @@
                     var emissionFactor = emission_factors[foodType];
 
                     if (emissionFactor) {
-                        emissions2 += food_consumed * emissionFactor;
+                        var foodDaysInput = parseInt(foodDays[i].value); // Get the value from the corresponding food days input
+
+                        if (foodDaysInput >= 1 && foodDaysInput <= 7) {
+                            totalFoodDays += foodDaysInput; // Add the selected days to the total
+
+                            var foodEmissions = (foodConsumedPerType * emissionFactor * foodDaysInput);
+                            emissions += foodEmissions;
+                        } else {
+                            document.getElementById("food_result").innerHTML = "Invalid number of days. Please enter a value between 1 and 7 for each food type.";
+                            return;
+                        }
                     } else {
                         document.getElementById("food_result").innerHTML = "Invalid food type. Please select a valid food type.";
                         return;
@@ -51,8 +88,12 @@
                 }
             }
 
-            document.getElementById("food_result").innerHTML = "Your total carbon emissions for the food are: " + emissions2.toFixed(2) + " kg CO2";
+            var monthlyEmissions = emissions * 4; // Multiply emissions by 4 to get monthly emissions
+
+            document.getElementById("food_result").innerHTML = "Your monthly total carbon emissions for the food are: " + monthlyEmissions.toFixed(2) + " kg CO2";
         }
+
+
 
         function calculateElectricityEmissions() {
             var units = parseFloat(document.getElementById("electricity_units").value);
@@ -66,18 +107,27 @@
             var foodEmissions = parseFloat(document.getElementById("food_result").innerText.split(": ")[1]);
             var electricityEmissions = parseFloat(document.getElementById("electricity_result").innerText.split(": ")[1]);
 
-            var total = (vehicleEmissions + foodEmissions + electricityEmissions)*30;
+            var total = (vehicleEmissions + (foodEmissions/30) + electricityEmissions) * 30;
 
             document.getElementById("total_result").innerHTML = "Total carbon emissions are: " + total.toFixed(2) + " kg CO2";
 
             var messageElement = document.getElementById("message");
 
             if (total < 49900) {
-                messageElement.innerHTML = "You are in the non-harmful range.";
+                messageElement.innerHTML = "YOU ARE IN THE NON-HARMFUL REGION";
             } else if (total >= 49900 && total < 349300) {
-                messageElement.innerHTML = "You are in the harmful range. Please reduce CO2 usage.";
+                messageElement.innerHTML = "YOU ARE IN THE HARMFUL REGION";
             } else {
-                messageElement.innerHTML = "Your CO2 consumption is very high!! This could even lead to death!! Please reduce the usage.";
+                messageElement.innerHTML = "YOUR CO2 CONSUMPTION IS VERY HIGH. THIS COULD EVEN LEAD TO DEATH! PLEASE REDUCE CO2 CONSUMPTIONS";
+            }
+        }
+
+        function togglePUCInputs() {
+            var has_puc = document.getElementById("has_puc").checked;
+            var pucInputs = document.getElementsByClassName("puc-input");
+
+            for (var i = 0; i < pucInputs.length; i++) {
+                pucInputs[i].disabled = !has_puc;
             }
         }
     </script>
@@ -99,6 +149,9 @@
             <label for="fuel_type">Enter the fuel type (petrol/diesel):</label>
             <input type="text" id="fuel_type" required>
             <br><br>
+            <label for="has_puc">Do you have PUC values?</label>
+            <input type="checkbox" id="has_puc" onchange="togglePUCInputs()">
+            <br><br>
             <button onclick="calculateVehicleEmissions()">Calculate Emissions</button>
             <p id="vehicle_result"></p>
         </section>
@@ -109,21 +162,27 @@
             <br>
             <input type="checkbox" id="food_chicken" name="food_type[]" value="1">
             <label for="food_chicken">Chicken</label>
+            <input type="number" id="food_chicken_days" name="food_days[]" min="1" max="7" placeholder="Days per week" required>
             <br>
             <input type="checkbox" id="food_eggs" name="food_type[]" value="2">
             <label for="food_eggs">Eggs</label>
+            <input type="number" id="food_eggs_days" name="food_days[]" min="1" max="7" placeholder="Days per week" required>
             <br>
             <input type="checkbox" id="food_rice" name="food_type[]" value="3">
             <label for="food_rice">Rice</label>
+            <input type="number" id="food_rice_days" name="food_days[]" min="1" max="7" placeholder="Days per week" required>
             <br>
             <input type="checkbox" id="food_vegetables" name="food_type[]" value="4">
             <label for="food_vegetables">Vegetables</label>
+            <input type="number" id="food_vegetables_days" name="food_days[]" min="1" max="7" placeholder="Days per week" required>
             <br>
             <input type="checkbox" id="food_milk" name="food_type[]" value="5">
             <label for="food_milk">Milk</label>
+            <input type="number" id="food_milk_days" name="food_days[]" min="1" max="7" placeholder="Days per week" required>
             <br>
             <input type="checkbox" id="food_fruits" name="food_type[]" value="6">
             <label for="food_fruits">Fruits</label>
+            <input type="number" id="food_fruits_days" name="food_days[]" min="1" max="7" placeholder="Days per week" required>
             <br><br>
             <label for="food_consumed">Enter the amount of food consumed by you (in kilos):</label>
             <input type="number" id="food_consumed" required>
@@ -131,7 +190,7 @@
             <button onclick="calculateFoodEmissions()">Calculate Emissions</button>
             <p id="food_result"></p>
         </section>
-
+               
         <section>
             <h2>Electricity Emission Calculator</h2>
             <label for="electricity_units">Enter total number of electricity units used (1 unit = 1 kWh):</label>
@@ -146,8 +205,7 @@
             <button onclick="calculateTotalEmissions()">Calculate Total Emissions</button>
             <p id="total_result"></p>
             <p id="message"></p>
-            <p><strong> PLEASE REDUCE YOUR CO2 EMISSIONS BY MAKING SURE YOU TAKE RIGHT DECISIONS. 
-            THIS WILL SAVE YOU AND OUR PLANET </strong></p> 
+            <p><strong>*PLEASE REDUCE YOUR CO2 USAGE, SAVE YOURSELF AND OUR EARTH*</strong></p>
         </section>
     </main>
 </body>
