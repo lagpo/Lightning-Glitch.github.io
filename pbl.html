@@ -107,7 +107,7 @@
             var foodEmissions = parseFloat(document.getElementById("food_result").innerText.split(": ")[1]);
             var electricityEmissions = parseFloat(document.getElementById("electricity_result").innerText.split(": ")[1]);
 
-            var total = (((foodEmissions/30) + electricityEmissions) * 365) + vehicleEmissions;
+            var total = (((foodEmissions/30) + (electricityEmissions)/30) * 365) + vehicleEmissions;
 
             document.getElementById("total_result").innerHTML = "Total carbon emissions are: " + total.toFixed(2) + " kg CO2";
 
