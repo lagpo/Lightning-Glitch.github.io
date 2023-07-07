@@ -107,19 +107,14 @@
             var foodEmissions = parseFloat(document.getElementById("food_result").innerText.split(": ")[1]);
             var electricityEmissions = parseFloat(document.getElementById("electricity_result").innerText.split(": ")[1]);
 
-            var total = (((foodEmissions/30) + (electricityEmissions)/30) * 365) + vehicleEmissions;
+            var total = ((((foodEmissions/30) + (electricityEmissions)/30) * 365) + vehicleEmissions)/1000;
 
-            document.getElementById("total_result").innerHTML = "Total carbon emissions are: " + total.toFixed(2) + " kg CO2";
+            document.getElementById("total_result").innerHTML = "Total carbon emissions are: " + total.toFixed(2) + " TON CO2";
 
-            var messageElement = document.getElementById("message");
+            
+            var treesRequired = Math.ceil(total) * 64; // Calculate The Number Of Trees Required Based on the total emissions
 
-            if (total < 49900) {
-                messageElement.innerHTML = "YOU ARE IN THE NON-HARMFUL REGION";
-            } else if (total >= 49900 && total < 349300) {
-                messageElement.innerHTML = "YOU ARE IN THE HARMFUL REGION";
-            } else {
-                messageElement.innerHTML = "YOUR CO2 CONSUMPTION IS VERY HIGH. THIS COULD EVEN LEAD TO DEATH! PLEASE REDUCE CO2 CONSUMPTIONS";
-            }
+            document.getElementById("trees_required").innerHTML = "Number Of Trees Required To Offset The Carbon Emissions: " + treesRequired;
         }
 
         function togglePUCInputs() {
@@ -130,6 +125,7 @@
                 pucInputs[i].disabled = !has_puc;
             }
         }
+
     </script>
 </head>
 <body>
@@ -204,13 +200,16 @@
             <h2>Total Emissions Calculator</h2>
             <button onclick="calculateTotalEmissions()">Calculate Total Emissions</button>
             <p id="total_result"></p>
-            <p id="message"></p>
+        </section>
+        <section id="trees_section">
+            <h2>Trees Required</h2>
+            <p id="trees_required"></p>
             <p><strong>*PLEASE REDUCE YOUR CO2 USAGE, SAVE YOURSELF AND OUR EARTH*</strong></p>
         </section>
+        
     </main>
 </body>
 </html>
-
 
 
 
